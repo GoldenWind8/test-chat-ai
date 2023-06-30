@@ -1,5 +1,6 @@
 from typing import Final
-
+import requests
+import json
 # pip install python-telegram-bot
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -9,41 +10,59 @@ print('Starting up bot...')
 TOKEN: Final = '6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk'
 BOT_USERNAME: Final = '@lexi112_bot'
 
+messageHist = []
 
-# Lets us use the /start command
+def api_call(name: str, message: str):
+    global messageHist
+
+    url = "https://text-lexi-xbuls6ziyq-uc.a.run.app"
+
+    payload = json.dumps({
+        "name": name,
+        "message": message,
+        "history": messageHist
+    })
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    response_data = response.json()
+
+    messageHist = response_data.get('history', [])
+
+    return response_data.get('message', '')
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Hello there! I\'m a bot. What\'s up?')
-
-
-# Lets us use the /help command
+    user_name = update.message.from_user.first_name  # get user's first name
+    text = f"Hey {user_name}!! I'm so excited to see you! The weather is great for a picnic, I brought some sushi, what did you bring?"
+    global messageHist
+    messageHist = ["Lexi:"+text]
+    await update.message.reply_text(text)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text('Try typing anything and I will do my best to respond!')
+    user_name = update.message.from_user.first_name  # get user's first name
+    text = f"Send your first message to lexi to begin the conversation!"
+    global messageHist
+    messageHist = []
+    await update.message.reply_text(text)
 
-
-
-def handle_response(text: str) -> str:
-    # Create your own response logic
-    processed: str = text.lower()
-
-    if 'hello' in processed:
-        return 'Hey there!'
-
-    return 'I don\'t understand'
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Get basic info of the incoming message
-    message_type: str = update.message.chat.type
+    global messageHist
+
     text: str = update.message.text
+    user_name = update.message.from_user.first_name  # get user's first name
+    if (len(messageHist) == 0):
+        messageHist = [f"{user_name}: " + text]
+
+    response: str = api_call(user_name, text)
+    await update.message.reply_text(response)
 
     # Print a log for debugging
-    print(f'User ({update.message.chat.id}) in {message_type}: "{text}"')
-
-    response: str = handle_response(text)
-
-    # Reply to message
-    print('Bot:', response)
-    await update.message.reply_text(response)
+    print(f'{user_name}: "{text}"')
+    print('Lexi:', response)
 
 
 # Log errors
@@ -67,3 +86,6 @@ if __name__ == '__main__':
     print('Polling...')
     # Run the bot
     app.run_polling(poll_interval=5)
+
+
+
