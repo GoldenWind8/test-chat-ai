@@ -1,6 +1,9 @@
-from typing import Final
+from typing import Final, List
+
+import pandas as pd
 import requests
 import json
+import csv
 # pip install python-telegram-bot
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
@@ -10,10 +13,11 @@ print('Starting up bot...')
 TOKEN: Final = '6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk'
 BOT_USERNAME: Final = '@lexi112_bot'
 
-messageHist = []
-
+messageHist = ["jhjnhkn", "req", "res"]
+oldMessageHist = ["hhhhk", "hjjhjjn", "hgjhbhj"]
 def api_call(name: str, message: str):
     global messageHist
+    global oldMessageHist
 
     url = "https://text-lexi-xbuls6ziyq-uc.a.run.app"
 
@@ -31,6 +35,7 @@ def api_call(name: str, message: str):
 
     response_data = response.json()
 
+    oldMessageHist = messageHist.copy()
     messageHist = response_data.get('history', [])
 
     return response_data.get('message', '')
@@ -46,6 +51,24 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global messageHist
     messageHist = []
     await update.message.reply_text(text)
+
+def list_to_json_str(lst: List[str]) -> str:
+    return json.dumps({"History": lst})
+async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global messageHist, oldMessageHist
+
+    if len(messageHist) >= 2:
+        data = {
+            'messageHist': [list_to_json_str(oldMessageHist)],
+            'request': [messageHist[-2]],
+            'response': [messageHist[-1]]
+        }
+        df = pd.DataFrame(data)
+        df.to_csv('conversation_history.csv', mode='a', index=False, header=False)
+    else:
+        print("Error saving, Not enough messages.")
+
+    await update.message.reply_text("Conversation saved!")
 
 
 
@@ -76,6 +99,7 @@ if __name__ == '__main__':
     # Commands
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('help', help_command))
+    app.add_handler(CommandHandler('save', save_command))
 
     # Messages
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
