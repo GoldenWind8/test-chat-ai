@@ -26,7 +26,7 @@ def api_call(name: str, message: str, history):
     return response_data.get('message', '')
 
 # Read CSV file
-data = pd.read_csv('conversation_history.csv', encoding='latin1')
+data = pd.read_csv('csv_archive/personality.csv', encoding='latin1')
 # Print column names
 print(data.columns)
 responses = []
