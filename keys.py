@@ -22,9 +22,11 @@ def api_call(name: str, message: str, messageHist: list):
 
     return response_data.get('message', '')
 
+input_file = "csv_archive/personality.csv"
 
+ouput = input_file.replace("csv_archive/", "tests/")
 # load csv
-df = pd.read_csv('conversation_history.csv')
+df = pd.read_csv(input_file)
 df = df.drop(columns=['Unnamed: 3'])
 df['api_response'] = ''
 name="Saul"
@@ -40,7 +42,7 @@ for index, row in df.iterrows():
     df.at[index, 'api_response'] = response
 
 # Save the dataframe to a new csv file
-df.to_csv('test.csv', index=False)
+df.to_csv(ouput, index=False)
 
 token = "6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk";
 
