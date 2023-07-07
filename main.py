@@ -3,8 +3,6 @@ from typing import Final, List
 import pandas as pd
 import requests
 import json
-import csv
-# pip install python-telegram-bot
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 

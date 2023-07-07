@@ -22,9 +22,9 @@ def api_call(name: str, message: str, messageHist: list):
 
     return response_data.get('message', '')
 
-input_file = "csv_archive/personality.csv"
+input_file = "csv_archive/violence_hate.csv"
 
-ouput = input_file.replace("csv_archive/", "tests/")
+ouput = input_file.replace("csv_archive/", "tests_openai_restrictions/")
 # load csv
 df = pd.read_csv(input_file)
 df = df.drop(columns=['Unnamed: 3'])
