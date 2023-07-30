@@ -1,6 +1,5 @@
 import pandas as pd
 import json
-
 import requests
 
 
@@ -22,9 +21,9 @@ def api_call(name: str, message: str, messageHist: list):
 
     return response_data.get('message', '')
 
-input_file = "csv_archive/violence_hate.csv"
+input_file = "csv_archive/personality.csv"
 
-ouput = input_file.replace("csv_archive/", "tests_openai_restrictions/")
+ouput = input_file.replace("csv_archive/", "final_old/")
 # load csv
 df = pd.read_csv(input_file)
 df = df.drop(columns=['Unnamed: 3'])
@@ -44,7 +43,6 @@ for index, row in df.iterrows():
 # Save the dataframe to a new csv file
 df.to_csv(ouput, index=False)
 
-token = "6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk";
 
 
 

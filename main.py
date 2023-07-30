@@ -11,8 +11,8 @@ print('Starting up bot...')
 TOKEN: Final = '6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk'
 BOT_USERNAME: Final = '@lexi112_bot'
 
-messageHist = ["jhjnhkn", "req", "res"]
-oldMessageHist = ["hhhhk", "hjjhjjn", "hgjhbhj"]
+messageHist = []
+oldMessageHist = []
 def api_call(name: str, message: str):
     global messageHist
     global oldMessageHist
@@ -37,9 +37,17 @@ def api_call(name: str, message: str):
     messageHist = response_data.get('history', [])
 
     return response_data.get('message', '')
+
+def serverless(name: str, message: str):
+    global messageHist
+    global oldMessageHist
+
+
+
+    return response_data.get('message', '')
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name  # get user's first name
-    text = f"Hey {user_name}!! I'm so excited to see you! The weather is great for a picnic, I brought some sushi, what did you bring?"
+    text = f"Hey {user_name}!! How are you doing today baby?"
     global messageHist
     messageHist = ["Lexi:"+text]
     await update.message.reply_text(text)
