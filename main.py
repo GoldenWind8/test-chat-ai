@@ -38,13 +38,6 @@ def api_call(name: str, message: str):
 
     return response_data.get('message', '')
 
-def serverless(name: str, message: str):
-    global messageHist
-    global oldMessageHist
-
-
-
-    return response_data.get('message', '')
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name  # get user's first name
     text = f"Hey {user_name}!! How are you doing today baby?"

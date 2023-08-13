@@ -1,10 +1,8 @@
-import os
 import requests
 from time import sleep
 import logging
 import argparse
 import sys
-import promptHandler
 
 
 endpoint_id = "9lfp36qd9tdida"
@@ -82,8 +80,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Runpod AI CLI')
     parser.add_argument('-s', '--stream', action='store_true', help='Stream output')
 
-    prompt = promptHandler.prompt2
-    print(run(prompt, stream=parser.parse_args().stream))
+
+    #print(run(prompt, stream=parser.parse_args().stream))
 
 
 
