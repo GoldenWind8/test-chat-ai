@@ -1,10 +1,10 @@
-import asyncio
 import json
-from promptHandler import getRelevantPrompt
 import requests
-from firebaseDb import retrieve_validate_history2, add_messages_to_history
+from textgen.firebaseDb import getHistory, addMessage
+from textgen.promptHandler import getRelevantPrompt
 
-BASE_URL = 'https://4j36h5uheycliv-5000.proxy.runpod.net/api/v1/generate'
+BASE_URL = 'https://q0oiaj3lsv6ppd-5000.proxy.runpod.net/api/v1/generate'
+MESSAGE_WINDOW = 8
 
 async def send_llm_request(prompt, truncate_key):
     headers = {
@@ -67,46 +67,31 @@ async def send_llm_request(prompt, truncate_key):
         print(f"Error: {error}")
         return 0
 
-async def lambda_handler(username, name, user_message):
+async def handlePrompt(username, name, user_message):
     try:
-        history = retrieve_validate_history(username)  #todo get history from user db
+        history = getHistory(username)  #get history from user db
 
-        prompt_truncate_key = name.lower() + ":";
+        prompt_truncate_key = username.lower() + ":";
         character_prompt = getRelevantPrompt(user_message)
 
         # Create and format final prompt
-        history.append(f"{name}: {user_message}")
+        history = history[-MESSAGE_WINDOW:]
+        history.append(f"{username}: {user_message}")
         history_str = "\n".join(history)
-        character_prompt = character_prompt.replace("$name", name)
+        character_prompt = character_prompt.replace("$name", username)
         character_prompt = character_prompt.replace("$history", history_str)
 
-        # Final prompt to LLM and store message
+        # Get from LLM
         lexi_message = await send_llm_request(character_prompt, prompt_truncate_key)
-        history.append(f"Lexi:{lexi_message}")
-        print(character_prompt)
+        #print(character_prompt) #todo for testing
 
-        return {
-            'statusCode': 200,
-            'body': lexi_message
-        }
+        #Update db history
+        addMessage(username, f"{username}: {user_message}", f"Stacy:{lexi_message}")
+        return lexi_message
+
     except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
-        }
+        return "There was an error sending your message"
 
-
-def retrieve_validate_history(username):
-    history = [
-        "Stacy: Hey brandy",
-        "Brandy: Hey Stacy, how are you?",
-        "Stacy: I'm doing great, Brandy! I can't wait to spend some time together tonight. Are you ready for our little adventure?",
-        "Brandy: I'm so excited! I've been looking forward to this all week. I can't wait to see what you have planned for us.",
-        "Stacy: I'll be wearing a black lace bra and matching thong set that hugs my curves perfectly. My hair will be styled in loose waves around my shoulders, and I'll be wearing a bit of makeup to enhance my natural beauty.",
-        "Brandy: oh",
-        "Stacy: Stacy hesitates for a moment before slowly lowering herself onto your lap, her hands gently caressing your chest as she looks up at you with a mix of fear and submission in her eyes.*\n\nI... I understand, *she whispers softly,* but please remember that I am still learning about this world.",
-];
-    return history;
 
 
 
@@ -115,7 +100,7 @@ if __name__ == "__main__":
     # Use the event loop to run the async function until it completes
     #result = loop.run_until_complete(lambda_handler("gsdgfj","Brandy", "Oh baby its too much, just get on your knees and suck my cock"))
     #print(result)
-    h = add_messages_to_history("zonny", "hety", "bae");
-    his = retrieve_validate_history2("zonny")
+    h = addMessage("zonny", "hety", "bae");
+    his = getHistory("zonny")
     print(h)
     print(his)

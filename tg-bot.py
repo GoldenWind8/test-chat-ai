@@ -1,48 +1,25 @@
 from typing import Final, List
 
 import pandas as pd
-import requests
 import json
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from textgen.textGeneration import handlePrompt
+from textgen.firebaseDb import clear_history
+
 
 print('Starting up bot...')
-
 TOKEN: Final = '6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk'
-BOT_USERNAME: Final = '@lexi112_bot'
+async def generate(username: str, message: str):
 
-messageHist = []
-oldMessageHist = []
-def api_call(name: str, message: str):
-    global messageHist
-    global oldMessageHist
+    response = await handlePrompt(username, username, message);
 
-    url = "https://text-lexi-xbuls6ziyq-uc.a.run.app"
-
-    payload = json.dumps({
-        "name": name,
-        "message": message,
-        "history": messageHist
-    })
-
-    headers = {
-        'Content-Type': 'application/json'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    response_data = response.json()
-
-    oldMessageHist = messageHist.copy()
-    messageHist = response_data.get('history', [])
-
-    return response_data.get('message', '')
+    return response
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name  # get user's first name
     text = f"Hey {user_name}!! How are you doing today baby?"
-    global messageHist
-    messageHist = ["Lexi:"+text]
+    clear_history(user_name);
     await update.message.reply_text(text)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name  # get user's first name
@@ -76,10 +53,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text: str = update.message.text
     user_name = update.message.from_user.first_name  # get user's first name
-    if (len(messageHist) == 0):
-        messageHist = [f"{user_name}: " + text]
 
-    response: str = api_call(user_name, text)
+    response: str = await generate(user_name, text)
     await update.message.reply_text(response)
 
     # Print a log for debugging
