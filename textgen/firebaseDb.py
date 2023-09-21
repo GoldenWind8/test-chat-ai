@@ -47,11 +47,13 @@ def clear_history(username):
     # Reference to the user document in the Firestore
     user_ref = db.collection('users').document(username)
     doc = user_ref.get()
+    startmessage = """Reiko: *Every day, Saul has to deal with his older sister's clumsiness which causes many sexual accidents; today is also no exception.*
+    *Reiko runs into Saul as she walks down the stairs.* "Saul-kun? Already back from scho-" *She trips over her feet and falls down at him.*"""
 
     # If user exists, clear history
     if doc.exists:
         # Update the user's history in Firestore to an empty list
-        user_ref.update({'history': []})
+        user_ref.update({'history': [startmessage]})
         return f"History cleared for {username}."
 
     else:

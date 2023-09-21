@@ -1,10 +1,11 @@
 import json
 import requests
-from textgen.firebaseDb import getHistory, addMessage
+from textgen.firebaseDb import getHistory, addMessage, clear_history
 from textgen.promptHandler import getRelevantPrompt
 
-BASE_URL = 'https://q0oiaj3lsv6ppd-5000.proxy.runpod.net/api/v1/generate'
+BASE_URL = 'https://vuhrwsw2vw2vmg-5000.proxy.runpod.net/api/v1/generate'
 MESSAGE_WINDOW = 8
+CHARACTER_NAME = "Reiko"
 
 async def send_llm_request(prompt, truncate_key):
     headers = {
@@ -14,10 +15,10 @@ async def send_llm_request(prompt, truncate_key):
 
     data = {
         "prompt": prompt,
-        "max_new_tokens": 80,
+        "max_new_tokens": 250,
         "preset": "None",
         "do_sample": True,
-        "temperature": 0.7,
+        "temperature": 0.5,
         "top_p": 0.1,
         "typical_p": 1,
         "epsilon_cutoff": 0,
@@ -40,8 +41,40 @@ async def send_llm_request(prompt, truncate_key):
         "truncation_length": 2048,
         "ban_eos_token": False,
         "skip_special_tokens": True,
-        "stopping_strings": [],
+        "stopping_strings": [ '\nSashin:', '</s>', '<|', '\n#', '\n*Sashin ', '\n\n\n' ],
     }
+    """
+              max_new_tokens: 250,
+          do_sample: true,
+          temperature: 0.5,
+          top_p: 0.9,
+          typical_p: 1,
+          repetition_penalty: 1.1,
+          repetition_penalty_range: 0,
+          encoder_repetition_penalty: 1,
+          top_k: 0,
+          min_length: 0,
+          no_repeat_ngram_size: 0,
+          num_beams: 1,
+          penalty_alpha: 0,
+          length_penalty: 1,
+          early_stopping: false,
+          seed: -1,
+          add_bos_token: true,
+          stopping_strings: [ '\nSashin:', '</s>', '<|', '\n#', '\n*Sashin ', '\n\n\n' ],
+          truncation_length: 2048,
+          ban_eos_token: false,
+          skip_special_tokens: true,
+          top_a: 0,
+          tfs: 1,
+          epsilon_cutoff: 0,
+          eta_cutoff: 0,
+          mirostat_mode: 0,
+          mirostat_tau: 5,
+          mirostat_eta: 0.1,
+          use_mancer: false
+        }
+    """
 
     try:
         response = requests.post(BASE_URL, headers=headers, data=json.dumps(data))
@@ -67,40 +100,43 @@ async def send_llm_request(prompt, truncate_key):
         print(f"Error: {error}")
         return 0
 
-async def handlePrompt(username, name, user_message):
+async def generateResponse(username, user_message):
     try:
-        history = getHistory(username)  #get history from user db
-
         prompt_truncate_key = username.lower() + ":";
-        character_prompt = getRelevantPrompt(user_message)
-
-        # Create and format final prompt
-        history = history[-MESSAGE_WINDOW:]
-        history.append(f"{username}: {user_message}")
-        history_str = "\n".join(history)
-        character_prompt = character_prompt.replace("$name", username)
-        character_prompt = character_prompt.replace("$history", history_str)
+        character_prompt = constructPrompt(user_message, username)
 
         # Get from LLM
         lexi_message = await send_llm_request(character_prompt, prompt_truncate_key)
-        #print(character_prompt) #todo for testing
+        print(character_prompt) #todo for testing
 
         #Update db history
-        addMessage(username, f"{username}: {user_message}", f"Stacy:{lexi_message}")
+        addMessage(username, f"{username}: {user_message}", f"{lexi_message}")
         return lexi_message
 
     except Exception as e:
         return "There was an error sending your message"
 
 
+def constructPrompt(user_message, username):
+    history = getHistory(username)  # get history from user db
+    character_prompt = getRelevantPrompt(user_message)
+    # Create and format final prompt
+    history = history[-MESSAGE_WINDOW:]
+    history.append(f"{username}: {user_message}")
+    history_str = "\n".join(history)
+    character_prompt = character_prompt.replace("{{user}}", username)
+    character_prompt = character_prompt.replace("{{history}}", history_str)
+    return character_prompt
 
 
 if __name__ == "__main__":
-    #loop = asyncio.get_event_loop()
-    # Use the event loop to run the async function until it completes
-    #result = loop.run_until_complete(lambda_handler("gsdgfj","Brandy", "Oh baby its too much, just get on your knees and suck my cock"))
-    #print(result)
-    h = addMessage("zonny", "hety", "bae");
+    clear_history("zonny")
+    h = addMessage("zonny", "Sashin: S-sis! Not again", """"Oopsie... I'm so sorry, Sashin-kun... I didn't mean to do that." *She looks up at him with those adorable purple eyes, her cheeks flushed red with embarrassment, and her chest heaving from the impact of the fall.*""");
+    h = addMessage("zonny", "Sashin: Mendoksee",
+                   """"Eep! Oh no, Sashin-kun! I didn't mean to touch there!" *She quickly lets go of your dick and scrambles to her feet, her face even redder now.* """);
+
     his = getHistory("zonny")
-    print(h)
-    print(his)
+    history_str = "\n".join(his)
+
+    messagePreview = constructPrompt("hey", "Crunchy")
+    print(history_str)

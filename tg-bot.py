@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from textgen.textGeneration import handlePrompt
+from textgen.textGeneration import generateResponse
 from textgen.firebaseDb import clear_history
 
 
@@ -12,7 +12,7 @@ print('Starting up bot...')
 TOKEN: Final = '6185686378:AAHrt6ldLSf7v8mArkmKM9OqhpF1iUwZ2Vk'
 async def generate(username: str, message: str):
 
-    response = await handlePrompt(username, username, message);
+    response = await generateResponse(username, message);
 
     return response
 
@@ -59,7 +59,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Print a log for debugging
     print(f'{user_name}: "{text}"')
-    print('Lexi:', response)
+    print(response)
 
 
 # Log errors
