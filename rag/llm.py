@@ -14,10 +14,10 @@ The following text is an extract from an implementation of The First Step Act, a
 Please use the information to  write a complaint for the inmate. Ask him for more info if necessary:
 Inmate: I am not receiving any phone time"""
 
-query = "I am not receiving any phone time"
+query = "I am not receiving any phone time. Please write a complaint email"
 
 #LLM
-llm = ChatOpenAI(openai_api_key="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", model_name="gpt-3.5")
+llm = ChatOpenAI(openai_api_key="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", model_name="gpt-3.5-turbo")
 retriever = loadEmbeddings("db3").as_retriever()
 print(retriever.get_relevant_documents(query))
 qa_chain = RetrievalQA.from_chain_type(llm=llm,
@@ -25,6 +25,6 @@ qa_chain = RetrievalQA.from_chain_type(llm=llm,
                                   retriever=retriever,
                                   return_source_documents=True)
 
-print(qa_chain.combine_documents_chain.llm_chain.prompt.template)
+
 llm_response = qa_chain(query)
-print(llm_response)
+print(llm_response['result'])

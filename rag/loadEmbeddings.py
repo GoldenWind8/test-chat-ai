@@ -14,11 +14,11 @@ def loadEmbeddings(dir):
 
 
 db3 = loadEmbeddings("db3")
-query = ""
+query = "phone time rules"
 
 docs = db3.similarity_search(query)
 #print(docs[0].page_content)
 
 
 retriever = db3.as_retriever()
-print(retriever.get_relevant_documents(query))
+print(retriever.get_relevant_documents(query)[0].page_content)

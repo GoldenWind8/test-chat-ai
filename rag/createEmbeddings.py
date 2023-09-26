@@ -1,14 +1,12 @@
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import HuggingFaceBgeEmbeddings
+from langchain.document_loaders.csv_loader import CSVLoader
 
 #splitting the text into
-loader = TextLoader('data.txt')
-documents = loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-texts = text_splitter.split_documents(documents)
-print(len(texts))
+loader = CSVLoader(file_path="data.csv",source_column="source", encoding='utf-8-sig')
+
+data = loader.load()
+print(data[5].page_content)
 
 
 def generateEmbeddings():
@@ -22,7 +20,7 @@ def generateEmbeddings():
     persist_directory = 'db3'
     ## Here is the nmew embeddings being used
     embedding = model_norm
-    vectordb = Chroma.from_documents(documents=texts,
+    vectordb = Chroma.from_documents(documents=data,
                                      embedding=embedding,
                                      persist_directory=persist_directory)
     return vectordb
@@ -30,4 +28,4 @@ def generateEmbeddings():
 
 vectordb = generateEmbeddings()
 retriever = vectordb.as_retriever()
-print(retriever.get_relevant_documents("Staff")[0].page_content)
+print(retriever.get_relevant_documents("Phone time rules")[0].page_content)

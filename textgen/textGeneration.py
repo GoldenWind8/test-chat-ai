@@ -26,7 +26,7 @@ async def send_llm_request(prompt, truncate_key):
         "tfs": 1,
         "top_a": 0,
         "repetition_penalty": 1.1,
-        "top_k": 40,
+        "top_k": 0,  #Consider setting to 100 with top p. https://www.reddit.com/r/SillyTavernAI/comments/14g0t38/top_k_top_p_values/
         "min_length": 0,
         "no_repeat_ngram_size": 0,
         "num_beams": 1,
@@ -42,39 +42,8 @@ async def send_llm_request(prompt, truncate_key):
         "ban_eos_token": False,
         "skip_special_tokens": True,
         "stopping_strings": [ '\nSashin:', '</s>', '<|', '\n#', '\n*Sashin ', '\n\n\n' ],
+        "repetition_penalty_range": 0, #check online
     }
-    """
-              max_new_tokens: 250,
-          do_sample: true,
-          temperature: 0.5,
-          top_p: 0.9,
-          typical_p: 1,
-          repetition_penalty: 1.1,
-          repetition_penalty_range: 0,
-          encoder_repetition_penalty: 1,
-          top_k: 0,
-          min_length: 0,
-          no_repeat_ngram_size: 0,
-          num_beams: 1,
-          penalty_alpha: 0,
-          length_penalty: 1,
-          early_stopping: false,
-          seed: -1,
-          add_bos_token: true,
-          stopping_strings: [ '\nSashin:', '</s>', '<|', '\n#', '\n*Sashin ', '\n\n\n' ],
-          truncation_length: 2048,
-          ban_eos_token: false,
-          skip_special_tokens: true,
-          top_a: 0,
-          tfs: 1,
-          epsilon_cutoff: 0,
-          eta_cutoff: 0,
-          mirostat_mode: 0,
-          mirostat_tau: 5,
-          mirostat_eta: 0.1,
-          use_mancer: false
-        }
-    """
 
     try:
         response = requests.post(BASE_URL, headers=headers, data=json.dumps(data))

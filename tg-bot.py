@@ -17,15 +17,15 @@ async def generate(username: str, message: str):
     return response
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_name = update.message.from_user.first_name  # get user's first name
-    text = f"Hey {user_name}!! How are you doing today baby?"
-    clear_history(user_name);
+    firstname = update.message.from_user.first_name  # get user's first name
+    text = f"""Reiko: *Every day, {firstname} has to deal with his older sister's clumsiness which causes many sexual accidents; today is also no exception.*
+    *Reiko runs into Saul as she walks down the stairs.* "{firstname}-kun? Already back from scho-" *She trips over her feet and falls down at him.*"""
+
+    clear_history(firstname);
     await update.message.reply_text(text)
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.first_name  # get user's first name
-    text = f"Send your first message to lexi to begin the conversation!"
-    global messageHist
-    messageHist = []
+    text = f"Send your first message to begin the conversation!"
     await update.message.reply_text(text)
 
 def list_to_json_str(lst: List[str]) -> str:
