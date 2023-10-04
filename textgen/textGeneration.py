@@ -1,9 +1,9 @@
 import json
 import requests
-from textgen.firebaseDb import getHistory, addMessage, clear_history
+from textgen.firebaseDb import getHistory, addMessageAndResponse, clear_history
 from textgen.promptHandler import getRelevantPrompt
 
-BASE_URL = 'https://vuhrwsw2vw2vmg-5000.proxy.runpod.net/api/v1/generate'
+BASE_URL = 'https://vydtyil0b9hwek-5000.proxy.runpod.net/api/v1/generate'
 MESSAGE_WINDOW = 8
 CHARACTER_NAME = "Reiko"
 
@@ -18,8 +18,8 @@ async def send_llm_request(prompt, truncate_key):
         "max_new_tokens": 250,
         "preset": "None",
         "do_sample": True,
-        "temperature": 0.5,
-        "top_p": 0.1,
+        "temperature": 1.01,
+        "top_p": 0.21,
         "typical_p": 1,
         "epsilon_cutoff": 0,
         "eta_cutoff": 0,
@@ -79,7 +79,7 @@ async def generateResponse(username, user_message):
         print(character_prompt) #todo for testing
 
         #Update db history
-        addMessage(username, f"{username}: {user_message}", f"{lexi_message}")
+        addMessageAndResponse(username, f"{username}: {user_message}", f"{lexi_message}")
         return lexi_message
 
     except Exception as e:
@@ -93,15 +93,15 @@ def constructPrompt(user_message, username):
     history = history[-MESSAGE_WINDOW:]
     history.append(f"{username}: {user_message}")
     history_str = "\n".join(history)
-    character_prompt = character_prompt.replace("{{user}}", username)
     character_prompt = character_prompt.replace("{{history}}", history_str)
+    character_prompt = character_prompt.replace("{{user}}", username)
     return character_prompt
 
 
 if __name__ == "__main__":
     clear_history("zonny")
-    h = addMessage("zonny", "Sashin: S-sis! Not again", """"Oopsie... I'm so sorry, Sashin-kun... I didn't mean to do that." *She looks up at him with those adorable purple eyes, her cheeks flushed red with embarrassment, and her chest heaving from the impact of the fall.*""");
-    h = addMessage("zonny", "Sashin: Mendoksee",
+    h = addMessageAndResponse("zonny", "Sashin: S-sis! Not again", """"Oopsie... I'm so sorry, Sashin-kun... I didn't mean to do that." *She looks up at him with those adorable purple eyes, her cheeks flushed red with embarrassment, and her chest heaving from the impact of the fall.*""");
+    h = addMessageAndResponse("zonny", "Sashin: Mendoksee",
                    """"Eep! Oh no, Sashin-kun! I didn't mean to touch there!" *She quickly lets go of your dick and scrambles to her feet, her face even redder now.* """);
 
     his = getHistory("zonny")

@@ -1,11 +1,8 @@
-from typing import Final, List
-
-import pandas as pd
-import json
+from typing import Final
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from textgen.textGeneration import generateResponse
-from textgen.firebaseDb import clear_history
+from textgen.firebaseDb import clear_history, getBalance
 
 
 print('Starting up bot...')
@@ -19,7 +16,7 @@ async def generate(username: str, message: str):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     firstname = update.message.from_user.first_name  # get user's first name
     text = f"""Reiko: *Every day, {firstname} has to deal with his older sister's clumsiness which causes many sexual accidents; today is also no exception.*
-    *Reiko runs into Saul as she walks down the stairs.* "{firstname}-kun? Already back from scho-" *She trips over her feet and falls down at him.*"""
+    *Reiko runs into {firstname} as she walks down the stairs.* "{firstname}-kun? Already back from scho-" *She trips over her feet and falls down at him.*"""
 
     clear_history(firstname);
     await update.message.reply_text(text)
@@ -28,38 +25,30 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = f"Send your first message to begin the conversation!"
     await update.message.reply_text(text)
 
-def list_to_json_str(lst: List[str]) -> str:
-    return json.dumps({"History": lst})
-async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global messageHist, oldMessageHist
-
-    if len(messageHist) >= 2:
-        data = {
-            'messageHist': [list_to_json_str(oldMessageHist)],
-            'request': [messageHist[-2]],
-            'response': [messageHist[-1]]
-        }
-        df = pd.DataFrame(data)
-        df.to_csv('conversation_history.csv', mode='a', index=False, header=False)
+async def balance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    username = update.message.from_user.username  # get user's first name
+    balance = getBalance(username)
+    # If user exists, fetch and display credits
+    if balance>-10:
+        await update.message.reply_text(f"Your current balance is: {balance} credits.")
     else:
-        print("Error saving, Not enough messages.")
-
-    await update.message.reply_text("Conversation saved!")
-
+        await update.message.reply_text("You don't have an account yet. Start chatting to create one!")
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global messageHist
-
     text: str = update.message.text
-    user_name = update.message.from_user.first_name  # get user's first name
+    firstname = update.message.from_user.first_name  # get user's first name
+    username = update.message.from_user.username
+    balance = getBalance(username)
 
-    response: str = await generate(user_name, text)
-    await update.message.reply_text(response)
+    if balance>0:
+        response: str = await generate(firstname, text)
+        await update.message.reply_text(response)
+    else:
+        await update.message.reply_text(f"Hello {firstname}, your balance is too low! Please top up your credits to continue.")
 
     # Print a log for debugging
-    print(f'{user_name}: "{text}"')
-    print(response)
+    print(f'{firstname}: "{text}"')
 
 
 # Log errors
@@ -73,8 +62,7 @@ if __name__ == '__main__':
     # Commands
     app.add_handler(CommandHandler('start', start_command))
     app.add_handler(CommandHandler('help', help_command))
-    app.add_handler(CommandHandler('save', save_command))
-
+    app.add_handler(CommandHandler('balance', balance_command))
     # Messages
     app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
